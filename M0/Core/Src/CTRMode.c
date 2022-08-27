@@ -16,6 +16,7 @@
 #include "PRESENT.h"
 #include "HIGHT.h"
 #include "GOST.h"
+#include "constants.h"
 
 void Select_Algorithm(CTRCounter* ctrCounter, enum Algorithm algorithm){
 	switch (algorithm)
@@ -84,7 +85,7 @@ void Select_Algorithm(CTRCounter* ctrCounter, enum Algorithm algorithm){
 
 
 
-void CTRMode_main(CTRCounter ctrCounter, enum Algorithm algorithm, int SIZE){
+int CTRMode_main(CTRCounter ctrCounter, enum Algorithm algorithm, int SIZE, int contText){
 
     // ENCRYPT SIDE	
     Select_Algorithm(&ctrCounter, algorithm);
@@ -119,10 +120,12 @@ void CTRMode_main(CTRCounter ctrCounter, enum Algorithm algorithm, int SIZE){
 	ctrCounter.cipherText[2] = ctrCounter.cipherTemp[2] ^ ctrCounter.cipherText[2];
 	ctrCounter.cipherText[3] = ctrCounter.cipherTemp[3] ^ ctrCounter.cipherText[3];
 	
-	// printf("\nDecrypt: \t\t");
-	for (int i = 0; i < 4; i++)
+	// Decrypt validation
+	for (int i = 0; i < SIZE; i++)
 	{
-		// printf("%08x ", ctrCounter.cipherText[i]);
+		// verify if decrypt and TextList is the same
+		if (!(ctrCounter.cipherText[i] == TEXT_LIST[contText - SIZE + i]))
+			return 1;
 	}		
-	// printf("\n\n");
+	return 0;
 }

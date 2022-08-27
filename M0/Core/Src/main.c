@@ -85,7 +85,7 @@ static void Error_Handler(void);
   */
 
 	
-void Call_CTR(enum Algorithm algorithm, int SIZE, uint32_t* key){
+void Call_CTR(enum Algorithm algorithm, int SIZE){
 	CTRCounter ctrCounter;
 
 	int contText = 0;
@@ -97,31 +97,28 @@ void Call_CTR(enum Algorithm algorithm, int SIZE, uint32_t* key){
 	int numText = 12;
 	//readText(nonceList, "NonceBlock.txt");
 	//readText(ctrCounter.Key, fileKey);
-	for(int i = 0; i < sizeof(key)/4;i++)	
-		ctrCounter.Key[i] = key[i];
+	for(int i = 0; i < 8;i++)	
+		ctrCounter.Key[i] = KEY[i];
 
-	do{
-
-		//// printf("Text : \t\t\t"); 
+	do{ 
 		for (int i = 0; i < SIZE; i++)
 		{			
-			ctrCounter.text[i] = textList[contText];
-			//// printf("%08x ", ctrCounter.text[i]); 
+			ctrCounter.text[i] = TEXT_LIST[contText];
 			contText++;
 		}
-
-		//// printf("\nNonce: \t\t\t"); 
 		
 		for (int i = 0; i < SIZE; i++)
 		{			
-			ctrCounter.ctrNonce[i] = nonceList[contNonce];
-			//// printf("%08x ", ctrCounter.ctrNonce[i]);  
+			ctrCounter.ctrNonce[i] = NONCE_LIST[contNonce]; 
 			contNonce++;
 		}
 
-		CTRMode_main(ctrCounter, algorithm, SIZE);
+		if (CTRMode_main(ctrCounter, algorithm, SIZE, contText) == 1){
+			 //error
+		}
+			
 
-	}while (contText < numText);	
+	}while (contText < 12);	
 }  
   
   

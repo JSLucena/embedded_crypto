@@ -33,4 +33,4 @@ SPECK_128, SPECK_192, SPECK_256, GOST_256, IDEA_128, PRESENT_80, PRESENT_128, HI
 //void ARIA_encrypt(AriaContext* context, uint32_t* block, uint32_t* P);
 //void ARIA_decrypt(AriaContext* context, uint32_t* block, uint32_t* P);
 
-void CTRMode_main(CTRCounter ctrCounter, enum Algorithm algorithm, int SIZE);
+int CTRMode_main(CTRCounter ctrCounter, enum Algorithm algorithm, int SIZE, int contText);
