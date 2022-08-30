@@ -47,7 +47,7 @@ flash: hex
 
 ##### Serial communication program #####
 minicom:
-	sudo minicom -D /dev/ttyACM0 -b 115200
+	sudo minicom -D /dev/ttyACM0 -b 9600
 
 ##### Debug: GDB commands #####
 gdb-server:

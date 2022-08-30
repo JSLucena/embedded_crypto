@@ -54,16 +54,16 @@
 #define USARTx_RCC_CONFIG(__USARTxCLKSource__)   __HAL_RCC_USART1_CONFIG(__USARTxCLKSource__)
 #define RCC_USARTxCLKSOURCE_HSI                  RCC_USART1CLKSOURCE_HSI
 
+/* Size of Trasmission buffer */
+#define TXBUFFERSIZE                      (COUNTOF(aTxBuffer) - 1)
 /* Size of Reception buffer */
-#define RX_BUFFER_SIZE                   10
+#define RXBUFFERSIZE                      TXBUFFERSIZE
   
 /* Exported macro ------------------------------------------------------------*/
 #define COUNTOF(__BUFFER__)   (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))
 /* Exported functions ------------------------------------------------------- */
-/* IRQ Handler treatment functions */
-//void UART_CharReception_Callback(void); 
-void UART_Error_Callback(void); 
 
 #endif /* __MAIN_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
