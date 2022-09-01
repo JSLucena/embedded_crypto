@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    UART/UART_WakeUpFromStop/Inc/main.h 
+  * @file    UART/UART_TwoBoards_ComIT/Inc/main.h 
   * @author  MCD Application Team
   * @brief   Header for main.c module
   ******************************************************************************
@@ -49,10 +49,6 @@
 /* Definition for USARTx's NVIC */
 #define USARTx_IRQn                      USART1_IRQn
 #define USARTx_IRQHandler                USART1_IRQHandler
-
-/* Power mode related macros */
-#define USARTx_RCC_CONFIG(__USARTxCLKSource__)   __HAL_RCC_USART1_CONFIG(__USARTxCLKSource__)
-#define RCC_USARTxCLKSOURCE_HSI                  RCC_USART1CLKSOURCE_HSI
 
 /* Size of Trasmission buffer */
 #define TXBUFFERSIZE                      (COUNTOF(aTxBuffer) - 1)
