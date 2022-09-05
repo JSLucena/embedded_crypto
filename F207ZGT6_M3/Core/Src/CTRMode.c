@@ -16,24 +16,7 @@
 #include "PRESENT.h"
 #include "HIGHT.h"
 #include "GOST.h"
-#//include "constants.h"
-
-uint32_t TEXT_LIST2[12]= {
-	0xE1E2C3D4,
-	0xE5F6A7B8,
-	0xA9AABBCC,
-	0xD1E2F33A,
-	0x7AADACBA,
-	0xE73F23BA,
-	0x6F7DCCBA,
-	0x8CBA7CAF,
-	0x241C9D7E,
-	0x836C5A8D,
-	0x2E6CA7D8,
-	0x2BA5DE78
-};
-
-
+#include "validator.h"
 
 void Select_Algorithm(CTRCounter* ctrCounter, enum Algorithm algorithm){
 	switch (algorithm)
