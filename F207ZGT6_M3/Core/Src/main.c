@@ -24,6 +24,140 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include "CTRMode.h"
+#include "ARIA.h"
+#include "CAMELLIA.h"
+#include "NOEKEON.h"
+#include "SEED.h"
+#include "SIMON.h"
+#include "SPECK.h"
+#include "IDEA.h"
+#include "PRESENT.h"
+#include "HIGHT.h"
+#include "GOST.h"
+//#include "constants.h"
+#define TEXT_SIZE_64 2
+#define TEXT_SIZE_128 4
+uint32_t NONCE_LIST[12]= {
+	0x2CAFACBA,
+	0x57A7A3BA,
+	0x1FABCCBA,
+	0xFCBABCAF,
+	0xAB56CD2E,
+	0x3EDAB56A,
+	0x13DAB45E,
+	0xDAB6AED2,
+	0x9B7AD26E,
+	0x7DE452AB,
+	0x7BDAE241,
+	0xB7D8A9DE 
+};
+	
+uint32_t TEXT_LIST[12]= {
+	0xE1E2C3D4,
+	0xE5F6A7B8,
+	0xA9AABBCC,
+	0xD1E2F33A,
+	0x7AADACBA,
+	0xE73F23BA,
+	0x6F7DCCBA,
+	0x8CBA7CAF,
+	0x241C9D7E,
+	0x836C5A8D,
+	0x2E6CA7D8,
+	0x2BA5DE78
+};
+
+uint32_t KEY[8]= {
+	0x00010203,
+	0x04050607,
+	0x08090a0b,
+	0x0c0d0e0f,
+	0x10111213,
+	0x14151617,
+	0x18191a1b,
+	0x1c1d1e1f
+};
+
+
+int Call_CTR(enum Algorithm algorithm, int SIZE){
+	CTRCounter ctrCounter;
+
+	int contText = 0;
+	int contNonce = 0;	
+
+	uint32_t textList[12];
+	uint32_t nonceList[12];
+	
+	int numText = 12;
+	//readText(nonceList, "NonceBlock.txt");
+	//readText(ctrCounter.Key, fileKey);
+	for(int i = 0; i < 8;i++)	
+		ctrCounter.Key[i] = KEY[i];
+
+	do{ 
+		for (int i = 0; i < SIZE; i++)
+		{			
+			ctrCounter.text[i] = TEXT_LIST[contText];
+			contText++;
+		}
+		
+		for (int i = 0; i < SIZE; i++)
+		{			
+			ctrCounter.ctrNonce[i] = NONCE_LIST[contNonce]; 
+			contNonce++;
+		}
+
+		if (CTRMode_main(ctrCounter, algorithm, SIZE, contText) == 1){
+			 return 1;
+		}
+		
+
+	}while (contText < 12);	
+  return 0;
+} 
+
+
+/* DWT (Data Watchpoint and Trace) registers, only exists on ARM Cortex with a DWT unit */
+
+#define KIN1_DWT_CONTROL             (*((volatile uint32_t*)0xE0001000))
+/*!< DWT Control register */
+#define KIN1_DWT_CYCCNTENA_BIT       (1UL<<0)
+/*!< CYCCNTENA bit in DWT_CONTROL register */
+#define KIN1_DWT_CYCCNT              (*((volatile uint32_t*)0xE0001004))
+/*!< DWT Cycle Counter register */
+#define KIN1_DEMCR                   (*((volatile uint32_t*)0xE000EDFC))
+/*!< DEMCR: Debug Exception and Monitor Control Register */
+#define KIN1_TRCENA_BIT              (1UL<<24)
+/*!< Trace enable bit in DEMCR register */
+
+#define KIN1_InitCycleCounter() \
+KIN1_DEMCR |= KIN1_TRCENA_BIT
+/*!< TRCENA: Enable trace and debug block DEMCR (Debug Exception and Monitor Control Register */
+
+#define KIN1_ResetCycleCounter() \
+KIN1_DWT_CYCCNT = 0
+/*!< Reset cycle counter */
+
+#define KIN1_EnableCycleCounter() \
+KIN1_DWT_CONTROL |= KIN1_DWT_CYCCNTENA_BIT
+/*!< Enable cycle counter */
+
+#define KIN1_DisableCycleCounter() \
+KIN1_DWT_CONTROL &= ~KIN1_DWT_CYCCNTENA_BIT
+/*!< Disable cycle counter */
+
+#define KIN1_GetCycleCounter() \
+KIN1_DWT_CYCCNT
+/*!< Read cycle counter register */
+
+uint32_t cycles; /* number of cycles */
+
+
+
+
 
 /** @addtogroup STM32F2xx_HAL_LL_MIX_Examples
   * @{
@@ -130,6 +264,10 @@ int main(void)
       /* Transfer error in transmission process */
       Error_Handler();
   }
+  
+  KIN1_InitCycleCounter(); /* enable DWT hardware */
+  KIN1_ResetCycleCounter(); /* reset cycle counter */
+  KIN1_EnableCycleCounter(); /* start counting */
   while (1)
   {
     /* USART IRQ handler is not anymore routed to HAL_UART_IRQHandler() function 
@@ -161,6 +299,27 @@ int main(void)
 
     /* Manage temporisation between TX buffer sendings */
     HAL_Delay(500);
+    
+    
+    int ret;
+    uint32_t tick,tock,spent;
+    uint8_t ret_string[32];
+    
+    
+    for(int i = 0; i < 10; i++)
+    {
+    	tick = KIN1_GetCycleCounter();
+		ret = Call_CTR(ARIA_128, TEXT_SIZE_128);
+		tock = KIN1_GetCycleCounter();
+		spent = tock - tick;
+		sprintf(ret_string,"%d\n\r",ret);
+		HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, 3, 1000);
+		sprintf(ret_string,"");
+		HAL_Delay(500);
+		sprintf(ret_string,"%lu clock cycles\n\r",spent);
+		HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, sizeof(ret_string), 1000);
+		HAL_Delay(1000);
+    }
   }
 }
 
