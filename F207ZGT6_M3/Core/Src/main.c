@@ -28,15 +28,15 @@
 #include <stdlib.h>
 #include "CTRMode.h"
 #include "ARIA.h"
-#include "CAMELLIA.h"
-#include "NOEKEON.h"
-#include "SEED.h"
-#include "SIMON.h"
-#include "SPECK.h"
-#include "IDEA.h"
-#include "PRESENT.h"
-#include "HIGHT.h"
-#include "GOST.h"
+//#include "CAMELLIA.h"
+//#include "NOEKEON.h"
+//#include "SEED.h"
+//#include "SIMON.h"
+//#include "SPECK.h"
+//#include "IDEA.h"
+//#include "PRESENT.h"
+//#include "HIGHT.h"
+//#include "GOST.h"
 #include "constants.h"
 #define TEXT_SIZE_64 2
 #define TEXT_SIZE_128 4
@@ -262,16 +262,16 @@ int main(void)
     for(int i = 0; i < 10; i++)
     {
     	tick = KIN1_GetCycleCounter();
-		ret = Call_CTR(ARIA_128, TEXT_SIZE_128);
-		tock = KIN1_GetCycleCounter();
-		spent = tock - tick;
-		sprintf(ret_string,"%d\n\r",ret);
-		HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, 3, 1000);
-		sprintf(ret_string,"");
-		HAL_Delay(500);
-		sprintf(ret_string,"%lu clock cycles\n\r",spent);
-		HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, sizeof(ret_string), 1000);
-		HAL_Delay(1000);
+	ret = Call_CTR(ARIA_128, TEXT_SIZE_128);
+	tock = KIN1_GetCycleCounter();
+	spent = tock - tick;
+	sprintf(ret_string,"%d\n\r",ret);
+	HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, 3, 1000);
+	sprintf(ret_string,"");
+	HAL_Delay(500);
+	sprintf(ret_string,"%lu clock cycles\n\r",spent);
+	HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, sizeof(ret_string), 1000);
+	HAL_Delay(1000);
     }
   }
 }

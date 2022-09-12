@@ -20,6 +20,24 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "CTRMode.h"
+#include "ARIA.h"
+//#include "CAMELLIA.h"
+//#include "NOEKEON.h"
+//#include "SEED.h"
+//#include "SIMON.h"
+//#include "SPECK.h"
+//#include "IDEA.h"
+//#include "PRESENT.h"
+//#include "HIGHT.h"
+//#include "GOST.h"
+#include "constants.h"
+
+#define TEXT_SIZE_64 2
+#define TEXT_SIZE_128 4
 
 /** @addtogroup STM32H7xx_HAL_Examples
   * @{
@@ -66,9 +84,6 @@ KIN1_DWT_CYCCNT
 
 uint32_t cycles; /* number of cycles */
 
-
-
-
 /* Private macro -------------------------------------------------------------*/
 #define HAL_TIMEOUT_VALUE 0xFFFFFFFF
 #define countof(a) (sizeof(a) / sizeof(*(a)))
@@ -92,6 +107,37 @@ static void Error_Handler(void);
 
 /* Private functions ---------------------------------------------------------*/
 
+int Call_CTR(enum Algorithm algorithm, int SIZE){
+	CTRCounter ctrCounter;
+
+	int contText = 0;
+	int contNonce = 0;	
+
+	for(int i = 0; i < 8;i++)	
+		ctrCounter.Key[i] = KEY[i];
+
+	do{ 
+		for (int i = 0; i < SIZE; i++)
+		{			
+			ctrCounter.text[i] = TEXT_LIST[contText];
+			contText++;
+		}
+		
+		for (int i = 0; i < SIZE; i++)
+		{			
+			ctrCounter.ctrNonce[i] = NONCE_LIST[contNonce]; 
+			contNonce++;
+		}
+
+		if (CTRMode_main(ctrCounter, algorithm, SIZE, contText) == 1){
+			 return 1;
+		}
+		
+
+	}while (contText < 148);	
+  return 0;
+} 
+
 /**
   * @brief  Main program
   * @param  None
@@ -99,6 +145,9 @@ static void Error_Handler(void);
   */
 int main(void)
 {
+  KIN1_InitCycleCounter(); /* enable DWT hardware */
+  KIN1_ResetCycleCounter(); /* reset cycle counter */
+  KIN1_EnableCycleCounter(); /* start counting */
   int32_t timeout;
   /* Enable the CPU Cache */
   CPU_CACHE_Enable();
@@ -142,10 +191,10 @@ int main(void)
       - BaudRate    = 9600 baud
       - Hardware flow control disabled (RTS and CTS signals) */
   UartHandle.Instance             = USARTx;
-  UartHandle.Init.BaudRate        = 9600;
+  UartHandle.Init.BaudRate        = 115200;
   UartHandle.Init.WordLength      = UART_WORDLENGTH_8B;
   UartHandle.Init.StopBits        = UART_STOPBITS_1;
-  UartHandle.Init.Parity          = UART_PARITY_ODD;
+  UartHandle.Init.Parity          = UART_PARITY_NONE;
   UartHandle.Init.HwFlowCtl       = UART_HWCONTROL_NONE;
   UartHandle.Init.Mode            = UART_MODE_TX_RX;
   UartHandle.Init.ClockPrescaler  = UART_PRESCALER_DIV1;
@@ -264,7 +313,28 @@ int main(void)
   HAL_UART_Transmit(&UartHandle, (uint8_t*)&FooterTxBuffer, countof(FooterTxBuffer)-1, HAL_TIMEOUT_VALUE);
 
   /* Infinite loop */
-  while(1) { ; }
+  while(1) { 
+	int ret;
+    uint32_t tick,tock,spent, acc;
+    uint8_t ret_string[32];
+    
+    for(int i = 0; i < 100; i++)
+    {
+    	tick = KIN1_GetCycleCounter();
+		ret = Call_CTR(ARIA_128, TEXT_SIZE_128);
+		if(ret)
+			Error_Handler();
+		tock = KIN1_GetCycleCounter();
+		spent = tock - tick;
+		acc+= spent;
+		
+    }
+
+	sprintf(ret_string,"%lu clock cycles\n\r",acc/100);
+	acc=0;
+	HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, strlen(ret_string), 1000);
+	HAL_Delay(1000);
+ }
 }
 
 /**
