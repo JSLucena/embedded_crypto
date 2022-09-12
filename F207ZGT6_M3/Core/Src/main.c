@@ -26,6 +26,7 @@
 #include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "CTRMode.h"
 #include "ARIA.h"
 //#include "CAMELLIA.h"
@@ -40,7 +41,7 @@
 #include "constants.h"
 #define TEXT_SIZE_64 2
 #define TEXT_SIZE_128 4
-
+#define TEXT_SIZE 148
 int Call_CTR(enum Algorithm algorithm, int SIZE){
 	CTRCounter ctrCounter;
 
@@ -68,7 +69,7 @@ int Call_CTR(enum Algorithm algorithm, int SIZE){
 		}
 		
 
-	}while (contText < 148);	
+	}while (contText < TEXT_SIZE);	
   return 0;
 } 
 
@@ -255,24 +256,35 @@ int main(void)
     
     
     int ret;
-    uint32_t tick,tock,spent;
+    uint32_t tick,tock,spent,acc;
     uint8_t ret_string[32];
     
-    
-    for(int i = 0; i < 10; i++)
+    ////////////////////////////////Aria 128
+    sprintf(ret_string,"\n\rStarting\n\r");
+	HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, strlen(ret_string), 1000);
+	HAL_Delay(1000);
+    for(int i = 0; i < 100; i++)
     {
     	tick = KIN1_GetCycleCounter();
-	ret = Call_CTR(ARIA_128, TEXT_SIZE_128);
-	tock = KIN1_GetCycleCounter();
-	spent = tock - tick;
-	sprintf(ret_string,"%d\n\r",ret);
-	HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, 3, 1000);
-	sprintf(ret_string,"");
-	HAL_Delay(500);
-	sprintf(ret_string,"%lu clock cycles\n\r",spent);
-	HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, sizeof(ret_string), 1000);
-	HAL_Delay(1000);
+		ret = Call_CTR(GOST_256, TEXT_SIZE_128);
+		tock = KIN1_GetCycleCounter();
+		if(ret == 1)
+			Error_Handler();
+		spent = tock - tick;
+		acc += spent;
     }
+    sprintf(ret_string,"%lu clock cycles\n\r",acc/100);
+    acc=0;
+    HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, strlen(ret_string), 1000);
+	HAL_Delay(1000);
+	
+	
+	
+	
+	
+	
+	
+	
   }
 }
 
