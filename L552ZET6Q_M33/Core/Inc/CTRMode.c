@@ -6,12 +6,12 @@
  */
 
 #include "CTRMode.h"
-//#include "ARIA.h"
+#include "ARIA.h"
 //#include "CAMELLIA.h"
 //#include "NOEKEON.h"
 //#include "SEED.h"
 //#include "SIMON.h"
-#include "SPECK.h"
+//#include "SPECK.h"
 //#include "IDEA.h"
 //#include "PRESENT.h"
 //#include "HIGHT.h"
@@ -21,9 +21,9 @@
 void Select_Algorithm(CTRCounter* ctrCounter, enum Algorithm algorithm){
 	switch (algorithm)
 		{
-		/*case ARIA_128 :
+		case ARIA_128 :
 			ARIA_main(ctrCounter, 128);
-			break;*/
+			break;
 		/*case ARIA_192 :
 			ARIA_main(ctrCounter, 192);
 			break;*/
@@ -60,12 +60,12 @@ void Select_Algorithm(CTRCounter* ctrCounter, enum Algorithm algorithm){
 		/*case SPECK_192 :
 			SPECK_main(ctrCounter, 192);
 			break;*/
-		case SPECK_256 :
+		/*case SPECK_256 :
 			SPECK_main(ctrCounter, 256);
-			break;
+			break;*/
 		/*case IDEA_128 :
 			IDEA_main(ctrCounter, 128);
-			break;*/
+			break;*/	
 		/*case PRESENT_80 :
 			PRESENT_main(ctrCounter, 80);
 			break;*/

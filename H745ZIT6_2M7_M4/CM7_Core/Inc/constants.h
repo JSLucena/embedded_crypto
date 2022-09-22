@@ -2,7 +2,7 @@
 #define CONSTANTS_H_INCLUDED
 
 uint32_t NONCE_LIST[593]= {
-	0x01ac9146,
+0x01ac9146,
 0x7a11f86e,
 0x4e6d67c0,
 0x93afe9db,

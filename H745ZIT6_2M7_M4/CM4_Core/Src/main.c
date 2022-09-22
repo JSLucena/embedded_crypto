@@ -76,10 +76,16 @@ int main(void)
   
   /* Add Cortex-M4 user application code here */ 
 
-
+	BSP_LED_Init(LED3);
+	BSP_LED_Init(LED2);
   /* Infinite loop */
   while (1)
   {
+	
+	BSP_LED_On(LED3);
+	HAL_Delay(500);
+	BSP_LED_Off(LED3);
+	HAL_Delay(500);
   }
 }
 
@@ -103,6 +109,10 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* Infinite loop */
   while (1)
   {
+	BSP_LED_On(LED2);
+	HAL_Delay(500);
+	BSP_LED_Off(LED2);
+	HAL_Delay(500);
   }
 }
 #endif

@@ -22,7 +22,6 @@
 #include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "CTRMode.h"
 #include "ARIA.h"
 //#include "CAMELLIA.h"
@@ -84,6 +83,9 @@ KIN1_DWT_CYCCNT
 
 uint32_t cycles; /* number of cycles */
 
+
+
+
 /* Private macro -------------------------------------------------------------*/
 #define HAL_TIMEOUT_VALUE 0xFFFFFFFF
 #define countof(a) (sizeof(a) / sizeof(*(a)))
@@ -106,7 +108,6 @@ static void CPU_CACHE_Enable(void);
 static void Error_Handler(void);
 
 /* Private functions ---------------------------------------------------------*/
-
 int Call_CTR(enum Algorithm algorithm, int SIZE){
 	CTRCounter ctrCounter;
 
@@ -134,10 +135,9 @@ int Call_CTR(enum Algorithm algorithm, int SIZE){
 		}
 		
 
-	}while (contText < 148);	
+	}while (contText < 12);	
   return 0;
 } 
-
 /**
   * @brief  Main program
   * @param  None
@@ -145,9 +145,6 @@ int Call_CTR(enum Algorithm algorithm, int SIZE){
   */
 int main(void)
 {
-  KIN1_InitCycleCounter(); /* enable DWT hardware */
-  KIN1_ResetCycleCounter(); /* reset cycle counter */
-  KIN1_EnableCycleCounter(); /* start counting */
   int32_t timeout;
   /* Enable the CPU Cache */
   CPU_CACHE_Enable();
@@ -322,8 +319,11 @@ int main(void)
     {
     	tick = KIN1_GetCycleCounter();
 		ret = Call_CTR(ARIA_128, TEXT_SIZE_128);
-		if(ret)
-			Error_Handler();
+		if(ret){
+			sprintf(ret_string,"%lu ERROR\n\r",ret);
+			HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, strlen(ret_string), 1000);
+			
+		}	
 		tock = KIN1_GetCycleCounter();
 		spent = tock - tick;
 		acc+= spent;
@@ -334,7 +334,8 @@ int main(void)
 	acc=0;
 	HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, strlen(ret_string), 1000);
 	HAL_Delay(1000);
- }
+
+  } 
 }
 
 /**
