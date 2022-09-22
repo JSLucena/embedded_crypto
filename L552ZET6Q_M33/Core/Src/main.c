@@ -157,7 +157,7 @@ int Call_CTR(enum Algorithm algorithm, int SIZE){
 			 return 1;
 		}		
 
-	}while (contText < 148);	
+	}while (contText < 807);	
   return 0;
 } 
 /* USER CODE END 0 */

@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H_INCLUDED
 #define CONSTANTS_H_INCLUDED
 
-uint32_t NONCE_LIST[593]= {
+uint32_t NONCE_LIST[807]= {
 	0x01ac9146,
 0x7a11f86e,
 0x4e6d67c0,
@@ -541,10 +541,9 @@ uint32_t NONCE_LIST[593]= {
 0x99aff937,
 0x21494499,
 0x2bf9e579
-
 };
 	
-uint32_t TEXT_LIST[593]= {
+uint32_t TEXT_LIST[807]= {
 	0x4C6F7265,
 0x6D206970,
 0x73756D20,
