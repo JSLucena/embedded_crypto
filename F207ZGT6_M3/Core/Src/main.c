@@ -224,35 +224,7 @@ int main(void)
   KIN1_EnableCycleCounter(); /* start counting */
   while (1)
   {
-    /* USART IRQ handler is not anymore routed to HAL_UART_IRQHandler() function 
-       and is now based on LL API functions use. 
-       Therefore, use of HAL IT based services is no more possible : use TX HAL polling services */
-    if(HAL_UART_Transmit(&UartHandle, (uint8_t*)aTxMessage, ubSizeToSend, 1000)!= HAL_OK)
-    {
-      /* Transfer error in transmission process */
-      Error_Handler();
-    }
-
-    /* Wait until the buffer is full */
-    while (uwBufferReadyIndication == 0);
-
-    /* Reset indication */
-    uwBufferReadyIndication = 0;
-
-    /* USART IRQ handler is not anymore routed to HAL_UART_IRQHandler() function 
-       and is now based on LL API functions use. 
-       Therefore, use of HAL IT based services is no more possible : use TX HAL polling services */
-    if(HAL_UART_Transmit(&UartHandle, (uint8_t*)pBufferReadyForUser, RX_BUFFER_SIZE, 1000)!= HAL_OK)
-    {
-      /* Transfer error in transmission process */
-      Error_Handler();
-    }
-
-    /* Toggle LED1 */
-    BSP_LED_Toggle(LED1);
-
-    /* Manage temporisation between TX buffer sendings */
-    HAL_Delay(500);
+    
     
     
     int ret;
@@ -263,7 +235,7 @@ int main(void)
     sprintf(ret_string,"\n\rStarting\n\r");
 	HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, strlen(ret_string), 1000);
 	HAL_Delay(1000);
-    for(int i = 0; i < 100; i++)
+    for(int i = 0; i < 50; i++)
     {
     	tick = KIN1_GetCycleCounter();
 		ret = Call_CTR(GOST_256, TEXT_SIZE_128);
@@ -273,7 +245,7 @@ int main(void)
 		spent = tock - tick;
 		acc += spent;
     }
-    sprintf(ret_string,"%lu clock cycles\n\r",acc/100);
+    sprintf(ret_string,"%lu clock cycles\n\r",acc/50);
     acc=0;
     HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, strlen(ret_string), 1000);
 	HAL_Delay(1000);

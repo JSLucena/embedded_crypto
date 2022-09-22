@@ -8,107 +8,81 @@
 #include "CTRMode.h"
 //#include "ARIA.h"
 
-
-//#include "CAMELLIA.h"
-
-//#include "NOEKEON.h"
-
-//#include "SEED.h"
-
-//#include "SIMON.h"
-
-//#include "SPECK.h"
-
-//#include "IDEA.h"
-
-//#include "PRESENT.h"
-
-//#include "HIGHT.h"
-
+#include "CAMELLIA.h"
+/*
+#include "NOEKEON.h"
+#include "SEED.h"
+#include "SIMON.h"
+#include "SPECK.h"
+#include "IDEA.h"
+#include "PRESENT.h"
+#include "HIGHT.h"
 #include "GOST.h"
-/**/
+*/
 #include "validator.h"
 
 void Select_Algorithm(CTRCounter* ctrCounter, enum Algorithm algorithm){
 	switch (algorithm)
 		{
-			/*
 		case ARIA_128 :
 			ARIA_main(ctrCounter, 128);
 			break;
-			
-		
+		/*
 		case ARIA_192 :
 			ARIA_main(ctrCounter, 192);
 			break;
-		
 		case ARIA_256 :
 			ARIA_main(ctrCounter, 256);
 			break;
-		
 		case CAMELLIA_128 :
 			CAMELLIA_main(ctrCounter, 128);
 			break;
-			
 		case CAMELLIA_192 :
 			CAMELLIA_main(ctrCounter, 192);
 			break;
-		
 		case CAMELLIA_256 :
 			CAMELLIA_main(ctrCounter, 256);
 			break;
-		
 		case NOEKEON_128 :
 			NOEKEON_main(ctrCounter, 128);
 			break;
-			
 		case SEED_128 :
 			SEED_main(ctrCounter, 128);
 			break;
-				
 		case SIMON_128 :
 			SIMON_main(ctrCounter, 128);
 			break;
-			
 		case SIMON_192 :
 			SIMON_main(ctrCounter, 192);
 			break;
-			
 		case SIMON_256 :
 			SIMON_main(ctrCounter, 256);
 			break;
-			
 		case SPECK_128 :
 			SPECK_main(ctrCounter, 128);
 			break;
-				
 		case SPECK_192 :
 			SPECK_main(ctrCounter, 192);
 			break;
-		
 		case SPECK_256 :
 			SPECK_main(ctrCounter, 256);
 			break;
-			
 		case IDEA_128 :
 			IDEA_main(ctrCounter, 128);
-			break;
-				
+			break;		
 		case PRESENT_80 :
 			PRESENT_main(ctrCounter, 80);
 			break;
 		case PRESENT_128 :
 			PRESENT_main(ctrCounter, 128);
 			break;
-				
 		case HIGHT_128 :
 			HIGHT_main(ctrCounter, 128);
 			break;
-			*/
 		case GOST_256 :
 			GOST_main(ctrCounter, 256);
 			break;
-		/**/
+		*/
 		default:
 			break;
 		}

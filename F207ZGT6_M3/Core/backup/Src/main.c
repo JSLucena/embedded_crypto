@@ -28,16 +28,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include "CTRMode.h"
+
 //#include "ARIA.h"
-//#include "CAMELLIA.h"
-//#include "NOEKEON.h"
-//#include "SEED.h"
-//#include "SIMON.h"
-//#include "SPECK.h"
-//#include "IDEA.h"
-//#include "PRESENT.h"
-//#include "HIGHT.h"
+
+#include "CAMELLIA.h"
+/*
+#include "NOEKEON.h"
+#include "SEED.h"
+#include "SIMON.h"
+#include "SPECK.h"
+#include "IDEA.h"
+#include "PRESENT.h"
+#include "HIGHT.h"
 #include "GOST.h"
+*/
 #include "constants.h"
 #define TEXT_SIZE_64 2
 #define TEXT_SIZE_128 4
@@ -72,16 +76,8 @@ int Call_CTR(enum Algorithm algorithm, int SIZE){
 	}while (contText < TEXT_SIZE);	
   return 0;
 } 
-/** @addtogroup STM32L4xx_HAL_LL_MIX_Examples
-  * @{
-  */
 
-/** @addtogroup UART_HyperTerminal_TxPolling_RxIT
-  * @{
-  */
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
 /* DWT (Data Watchpoint and Trace) registers, only exists on ARM Cortex with a DWT unit */
 
 #define KIN1_DWT_CONTROL             (*((volatile uint32_t*)0xE0001000))
@@ -116,6 +112,21 @@ KIN1_DWT_CYCCNT
 /*!< Read cycle counter register */
 
 uint32_t cycles; /* number of cycles */
+
+
+
+
+
+/** @addtogroup STM32F2xx_HAL_LL_MIX_Examples
+  * @{
+  */
+
+/** @addtogroup UART_HyperTerminal_TxPolling_RxIT
+  * @{
+  */
+
+/* Private typedef -----------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* UART handler declaration */
@@ -147,23 +158,21 @@ static void Error_Handler(void);
   */
 int main(void)
 {
-  /* STM32L4xx HAL library initialization:
-       - Configure the Flash prefetch
-       - Systick timer is configured by default as source of time base, but user 
-         can eventually implement his proper time base source (a general purpose 
-         timer for example or other time source), keeping in mind that Time base 
-         duration should be kept 1ms since PPP_TIMEOUT_VALUEs are defined and 
-         handled in milliseconds basis.
+  /* STM32F2xx HAL library initialization:
+       - Configure the Flash prefetch, instruction and Data caches
+       - Configure the Systick to generate an interrupt each 1 msec
        - Set NVIC Group Priority to 4
-       - Low Level Initialization
+       - Global MSP (MCU Support Package) initialization
      */
   HAL_Init();
 
-  /* Configure the system clock to 80 MHz */
+  /* Configure the system clock to 120 MHz */
   SystemClock_Config();
   
   /* Configure leds */
+  BSP_LED_Init(LED1);
   BSP_LED_Init(LED2);
+  BSP_LED_Init(LED3);
   
   /*##-1- Configure the UART peripheral using HAL services ###################*/
   /* Put the USART peripheral in the Asynchronous mode (UART Mode) */
@@ -207,14 +216,14 @@ int main(void)
   /* In main loop, Tx buffer is sent every 0.5 sec. 
      As soon as RX buffer is detected as full, received bytes are echoed on TX line to PC com port */
 
-  /* Send start message */
+  /* Infinite loop */
   if(HAL_UART_Transmit(&UartHandle, (uint8_t*)aTxStartMessage, ubTxStartSizeToSend, 1000)!= HAL_OK)
   {
-    /* Transfer error in transmission process */
-    Error_Handler();
+      /* Transfer error in transmission process */
+      Error_Handler();
   }
-
-    KIN1_InitCycleCounter(); /* enable DWT hardware */
+  
+  KIN1_InitCycleCounter(); /* enable DWT hardware */
   KIN1_ResetCycleCounter(); /* reset cycle counter */
   KIN1_EnableCycleCounter(); /* start counting */
   while (1)
@@ -233,7 +242,7 @@ int main(void)
     for(int i = 0; i < 100; i++)
     {
     	tick = KIN1_GetCycleCounter();
-		ret = Call_CTR(GOST_256, TEXT_SIZE_128);
+		ret = Call_CTR(ARIA_128, TEXT_SIZE_128);
 		tock = KIN1_GetCycleCounter();
 		if(ret == 1)
 			Error_Handler();
@@ -257,70 +266,59 @@ int main(void)
 
 /**
   * @brief  System Clock Configuration
-  *         The system Clock is configured as follows :
-  *            System Clock source            = PLL (MSI)
-  *            SYSCLK(Hz)                     = 80000000
-  *            HCLK(Hz)                       = 80000000
+  *         The system Clock is configured as follow : 
+  *            System Clock source            = PLL (HSE)
+  *            SYSCLK(Hz)                     = 120000000
+  *            HCLK(Hz)                       = 120000000
   *            AHB Prescaler                  = 1
-  *            APB1 Prescaler                 = 1
-  *            APB2 Prescaler                 = 1
-  *            MSI Frequency(Hz)              = 4000000
-  *            PLL_M                          = 1
-  *            PLL_N                          = 40
-  *            PLL_R                          = 2
-  *            PLL_P                          = 7
-  *            PLL_Q                          = 4
-  *            Flash Latency(WS)              = 4
+  *            APB1 Prescaler                 = 4
+  *            APB2 Prescaler                 = 2
+  *            HSE Frequency(Hz)              = 8000000
+  *            PLL_M                          = 8
+  *            PLL_N                          = 240
+  *            PLL_P                          = 2
+  *            PLL_Q                          = 5
+  *            VDD(V)                         = 3.3
+  *            Flash Latency(WS)              = 3
   * @param  None
   * @retval None
   */
 void SystemClock_Config(void)
 {
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_OscInitTypeDef RCC_OscInitStruct;
 
-  /* MSI is enabled after System reset, activate PLL with MSI as source */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
-  RCC_OscInitStruct.MSIState = RCC_MSI_ON;
-  RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
-  RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
+  /* Enable HSE Oscillator and activate PLL with HSE as source */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
-  RCC_OscInitStruct.PLL.PLLM = 1;
-  RCC_OscInitStruct.PLL.PLLN = 40;
-  RCC_OscInitStruct.PLL.PLLR = 2;
-  RCC_OscInitStruct.PLL.PLLP = 7;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
-  if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    /* Initialization Error */
-    while(1);
-  }
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLN = 240;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 5;
+  HAL_RCC_OscConfig(&RCC_OscInitStruct);
   
   /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
      clocks dividers */
   RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;  
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;  
-  if(HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
-  {
-    /* Initialization Error */
-    while(1);
-  }
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3);
 }
-
 /**
   * @brief  This function is executed in case of error occurrence.
   * @retval None
   */
 static void Error_Handler(void)
 {
-  /* Turn LED2 to on for error */
-  BSP_LED_On(LED2); 
+  /* Toggle LED3 for error */
   while(1)
   {
+    BSP_LED_Toggle(LED3);
+    HAL_Delay(1000);
   }
 }
 
@@ -334,7 +332,7 @@ void UART_CharReception_Callback(void)
 {
 uint8_t *ptemp;
 
-  /* Read Received character. RXNE flag is cleared by reading of RDR register */
+  /* Read Received character. RXNE flag is cleared by reading of DR register */
   pBufferReadyForReception[uwNbReceivedChars++] = LL_USART_ReceiveData8(USARTx);
 
   /* Checks if Buffer full indication has to be set */
@@ -359,25 +357,25 @@ uint8_t *ptemp;
   */
 void UART_Error_Callback(void)
 {
-  __IO uint32_t isr_reg;
+  __IO uint32_t sr_reg;
 
   /* Disable USARTx_IRQn */
   NVIC_DisableIRQ(USARTx_IRQn);
   
   /* Error handling example :
-    - Read USART ISR register to identify flag that leads to IT raising
+    - Read USART SR register to identify flag that leads to IT raising
     - Perform corresponding error handling treatment according to flag
   */
-  isr_reg = LL_USART_ReadReg(USARTx, ISR);
-  if (isr_reg & LL_USART_ISR_NE)
+  sr_reg = LL_USART_ReadReg(USARTx, SR);
+  if (sr_reg & LL_USART_SR_NE)
   {
-    /* Turn LED2 on: Transfer error in reception/transmission process */
-    BSP_LED_On(LED2);
+    /* Turn LED3 on: Transfer error in reception/transmission process */
+    BSP_LED_On(LED3);
   }
   else
   {
-    /* Turn LED2 on: Transfer error in reception/transmission process */
-    BSP_LED_On(LED2);
+    /* Turn LED3 on: Transfer error in reception/transmission process */
+    BSP_LED_On(LED3);
   }
 }
 
@@ -389,7 +387,7 @@ void UART_Error_Callback(void)
   * @param  line: assert_param error line source number
   * @retval None
   */
-void assert_failed(uint8_t *file, uint32_t line)
+void assert_failed(uint8_t* file, uint32_t line)
 { 
   /* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
