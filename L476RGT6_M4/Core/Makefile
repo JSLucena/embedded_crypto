@@ -39,6 +39,11 @@ CFLAGS += -I$(CMSIS_DIR)/Device/ST/STM32L4xx/Include
 SRC_FILES += $(DRIVER_DIR)/Src/*
 CFLAGS += -I$(DRIVER_DIR)/Inc
 
+
+##### Cryptography Algorithms #####
+SRC_FILES += ../../crypto/Src/*
+CFLAGS += -I ../../crypto/Inc
+
 all: elf
 
 ##### Flash code to board #####

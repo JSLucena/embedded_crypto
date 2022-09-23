@@ -7,7 +7,9 @@
 
 #include "CTRMode.h"
 #include "ARIA.h"
+
 #include "CAMELLIA.h"
+
 #include "NOEKEON.h"
 #include "SEED.h"
 #include "SIMON.h"
@@ -16,9 +18,9 @@
 #include "PRESENT.h"
 #include "HIGHT.h"
 #include "GOST.h"
-//#include "constants.h"
 
-#include "config.h"
+#include "validator.h"
+
 
 /*
 void Select_Algorithm(CTRCounter* ctrCounter, enum Algorithm algorithm){
@@ -118,13 +120,8 @@ int CTRMode_main(CTRCounter ctrCounter, enum Algorithm algorithm, int SIZE, int 
 
     // ENCRYPT SIDE	
     //Select_Algorithm(&ctrCounter, algorithm);
-	crypt_main(ctrCounter,KEYSIZE)
-	// printf("\nCypher before XOR: \t");
-	for (int i = 0; i < 4; i++)
-	{
-		// printf("%08x ", ctrCounter.cipherText[i]);
-	}
-
+	crypt_main(&ctrCounter,KEYSIZE);
+	
 	ctrCounter.cipherTemp[0] = ctrCounter.text[0] ^ ctrCounter.cipherText[0];
 	ctrCounter.cipherTemp[1] = ctrCounter.text[1] ^ ctrCounter.cipherText[1];
 	if(SIZE == 4){
@@ -135,14 +132,9 @@ int CTRMode_main(CTRCounter ctrCounter, enum Algorithm algorithm, int SIZE, int 
 		ctrCounter.cipherTemp[3] = 0x00000000;
 	}
 
-	// printf("\nCypher after XOR: \t");
-	for (int i = 0; i < 4; i++)
-	{
-		// printf("%08x ", ctrCounter.cipherTemp[i]);
-	}
-	
 	// DECRYPT SIDE
-	crypt_main(ctrCounter,KEYSIZE)
+	//Select_Algorithm(&ctrCounter, algorithm);
+	crypt_main(&ctrCounter,KEYSIZE);
 	
 	ctrCounter.cipherText[0] = ctrCounter.cipherTemp[0] ^ ctrCounter.cipherText[0];
 	ctrCounter.cipherText[1] = ctrCounter.cipherTemp[1] ^ ctrCounter.cipherText[1];

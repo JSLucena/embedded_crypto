@@ -28,20 +28,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include "CTRMode.h"
-//#include "ARIA.h"
-//#include "CAMELLIA.h"
-//#include "NOEKEON.h"
-//#include "SEED.h"
-//#include "SIMON.h"
-//#include "SPECK.h"
-//#include "IDEA.h"
-//#include "PRESENT.h"
-//#include "HIGHT.h"
+#include "ARIA.h"
+#include "CAMELLIA.h"
+#include "NOEKEON.h"
+#include "SEED.h"
+#include "SIMON.h"
+#include "SPECK.h"
+#include "IDEA.h"
+#include "PRESENT.h"
+#include "HIGHT.h"
 #include "GOST.h"
+#include "config.h"
 #include "constants.h"
-#define TEXT_SIZE_64 2
-#define TEXT_SIZE_128 4
-#define TEXT_SIZE 148
 int Call_CTR(enum Algorithm algorithm, int SIZE){
 	CTRCounter ctrCounter;
 
@@ -69,7 +67,7 @@ int Call_CTR(enum Algorithm algorithm, int SIZE){
 		}
 		
 
-	}while (contText < TEXT_SIZE);	
+	}while (contText < 202);	
   return 0;
 } 
 /** @addtogroup STM32L4xx_HAL_LL_MIX_Examples
@@ -207,14 +205,8 @@ int main(void)
   /* In main loop, Tx buffer is sent every 0.5 sec. 
      As soon as RX buffer is detected as full, received bytes are echoed on TX line to PC com port */
 
-  /* Send start message */
-  if(HAL_UART_Transmit(&UartHandle, (uint8_t*)aTxStartMessage, ubTxStartSizeToSend, 1000)!= HAL_OK)
-  {
-    /* Transfer error in transmission process */
-    Error_Handler();
-  }
 
-    KIN1_InitCycleCounter(); /* enable DWT hardware */
+  KIN1_InitCycleCounter(); /* enable DWT hardware */
   KIN1_ResetCycleCounter(); /* reset cycle counter */
   KIN1_EnableCycleCounter(); /* start counting */
   while (1)
@@ -226,24 +218,20 @@ int main(void)
     uint32_t tick,tock,spent,acc;
     uint8_t ret_string[32];
     
-    ////////////////////////////////Aria 128
-    sprintf(ret_string,"\n\rStarting\n\r");
-	HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, strlen(ret_string), 1000);
-	HAL_Delay(1000);
-    for(int i = 0; i < 100; i++)
+    for(int i = 0; i < 20; i++)
     {
     	tick = KIN1_GetCycleCounter();
-		ret = Call_CTR(GOST_256, TEXT_SIZE_128);
-		tock = KIN1_GetCycleCounter();
-		if(ret == 1)
-			Error_Handler();
-		spent = tock - tick;
-		acc += spent;
+      ret = Call_CTR(KEYSIZE, TEXT_SIZE);
+      tock = KIN1_GetCycleCounter();
+      if(ret == 1)
+        Error_Handler();
+      spent = tock - tick;
+      acc += spent;
     }
-    sprintf(ret_string,"%lu clock cycles\n\r",acc/100);
+    sprintf(ret_string,"%lu clock cycles\n\r",acc/20);
     acc=0;
     HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, strlen(ret_string), 1000);
-	HAL_Delay(1000);
+	  HAL_Delay(1000);
 	
 	
 	
