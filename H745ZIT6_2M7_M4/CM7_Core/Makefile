@@ -21,7 +21,7 @@ OBJDUMP = ${TRIPLE}-objdump
 
 ##### Compiler options #####
 CFLAGS = -g3 -std=gnu11 -Wall -T$(LINKER_SCRIPT)
-CFLAGS += -DDEBUG -DCORE_CM7 -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -DSTM32H745xx
+CFLAGS += -DCORE_CM7 -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -DSTM32H745xx
 CFLAGS += -ffunction-sections -fdata-sections #-fstack-usage
 CFLAGS += -mthumb -mcpu=cortex-m7 -O0 -MMD -MP
 CFLAGS += -mfloat-abi=hard -mfpu=fpv5-d16 --specs=nosys.specs --specs=nano.specs
@@ -38,6 +38,10 @@ CFLAGS += -I$(CMSIS_DIR)/Device/ST/STM32H7xx/Include
 
 SRC_FILES += $(DRIVER_DIR)/Src/*
 CFLAGS += -I$(DRIVER_DIR)/Inc
+
+##### Cryptography Algorithms #####
+SRC_FILES += ../../crypto/Src/*
+CFLAGS += -I ../../crypto/Inc
 
 all: elf
 
@@ -71,7 +75,7 @@ disass-all:
 	$(OBJDUMP) -D $(PROJ_NAME).elf > $(PROJ_NAME).s
 
 elf:	$(SRC_FILES)
-	$(CC) $(CFLAGS) -o $(PROJ_NAME).elf $^
+	$(CC) $(CFLAGS) $(DEF) -o $(PROJ_NAME).elf $^
 
 hex:	
 	$(OBJCOPY) -O ihex $(PROJ_NAME).elf $(PROJ_NAME).hex

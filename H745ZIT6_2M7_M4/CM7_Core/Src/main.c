@@ -19,24 +19,23 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
+
 #include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "CTRMode.h"
 #include "ARIA.h"
-//#include "CAMELLIA.h"
-//#include "NOEKEON.h"
-//#include "SEED.h"
-//#include "SIMON.h"
-//#include "SPECK.h"
-//#include "IDEA.h"
-//#include "PRESENT.h"
-//#include "HIGHT.h"
-//#include "GOST.h"
+#include "CAMELLIA.h"
+#include "NOEKEON.h"
+#include "SEED.h"
+#include "SIMON.h"
+#include "SPECK.h"
+#include "IDEA.h"
+#include "PRESENT.h"
+#include "HIGHT.h"
+#include "GOST.h"
 #include "constants.h"
-
-#define TEXT_SIZE_64 2
-#define TEXT_SIZE_128 4
+#include "config.h"
 
 /** @addtogroup STM32H7xx_HAL_Examples
   * @{
@@ -48,8 +47,22 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-/* DWT (Data Watchpoint and Trace) registers, only exists on ARM Cortex with a DWT unit */
+/* Private macro -------------------------------------------------------------*/
+#define HAL_TIMEOUT_VALUE 0xFFFFFFFF
+#define countof(a) (sizeof(a) / sizeof(*(a)))
 
+/* Private variables ---------------------------------------------------------*/
+/* UART handler declaration */
+UART_HandleTypeDef UartHandle;
+
+
+/* Private function prototypes -----------------------------------------------*/
+static void SystemClock_Config(void);
+static void CPU_CACHE_Enable(void);
+static void Error_Handler(void);
+
+/* Private functions ---------------------------------------------------------*/
+/* DWT (Data Watchpoint and Trace) registers, only exists on ARM Cortex with a DWT unit */
 #define KIN1_DWT_CONTROL             (*((volatile uint32_t*)0xE0001000))
 /*!< DWT Control register */
 #define KIN1_DWT_CYCCNTENA_BIT       (1UL<<0)
@@ -83,31 +96,6 @@ KIN1_DWT_CYCCNT
 
 uint32_t cycles; /* number of cycles */
 
-
-
-
-/* Private macro -------------------------------------------------------------*/
-#define HAL_TIMEOUT_VALUE 0xFFFFFFFF
-#define countof(a) (sizeof(a) / sizeof(*(a)))
-
-/* Private variables ---------------------------------------------------------*/
-/* UART handler declaration */
-UART_HandleTypeDef UartHandle;
-uint8_t HeaderTxBuffer[] = "\r\nUART WakeUp from stop mode using FIFO\r\n";
-uint8_t Part1TxBuffer[] = "\r\n\t Part 1: RXFIFO threshold interrupt\r\n   Waiting for characters reception until RX FIFO threshold is reached\r\n   Please send 4 bytes\r\n";
-uint8_t WakeupRXFTBuffer[] = "\r\n   Proper wakeup based on RXFIFO threshold interrupt detection.\r\n";
-uint8_t Part2TxBuffer[] = "\r\n\t Part 2: RXFIFO full interrupt\r\n   Waiting for characters reception until RX FIFO is Full \r\n   Please send 16 bytes\r\n";
-uint8_t WakeupRXFFBuffer[] = "\r\n   Proper wakeup based on RXFIFO full interrupt detection.\r\n";
-uint8_t FooterTxBuffer[] = "\r\nExample finished successfully\r\n";
-
-uint8_t RxBuffer[16];
-
-/* Private function prototypes -----------------------------------------------*/
-static void SystemClock_Config(void);
-static void CPU_CACHE_Enable(void);
-static void Error_Handler(void);
-
-/* Private functions ---------------------------------------------------------*/
 int Call_CTR(enum Algorithm algorithm, int SIZE){
 	CTRCounter ctrCounter;
 
@@ -132,17 +120,23 @@ int Call_CTR(enum Algorithm algorithm, int SIZE){
 
 		if (CTRMode_main(ctrCounter, algorithm, SIZE, contText) == 1){
 			 return 1;
-		}
-		
+		}		
 
-	}while (contText < 12);	
+	}while (contText < 202);	
   return 0;
-} 
+
+}
+
+
+
 /**
   * @brief  Main program
   * @param  None
   * @retval None
   */
+
+
+
 int main(void)
 {
   int32_t timeout;
@@ -165,15 +159,13 @@ int main(void)
      */
   HAL_Init();
 
+
+
   /* Configure the system clock to 400 MHz */
   SystemClock_Config();
 
-  /* Initialize BSP LEDs */
-  BSP_LED_Init(LED1);
-  BSP_LED_Init(LED3);
-
-  /* Turn LED1 on */
-  BSP_LED_On(LED1);
+  /* Configure leds */
+  BSP_LED_Init(LED2);
 
   /*##########################################################################*/
   /*##-1- Configure the UART peripheral ######################################*/
@@ -194,8 +186,6 @@ int main(void)
   UartHandle.Init.Parity          = UART_PARITY_NONE;
   UartHandle.Init.HwFlowCtl       = UART_HWCONTROL_NONE;
   UartHandle.Init.Mode            = UART_MODE_TX_RX;
-  UartHandle.Init.ClockPrescaler  = UART_PRESCALER_DIV1;
-  UartHandle.Init.OneBitSampling  = UART_ONE_BIT_SAMPLE_DISABLE;
   UartHandle.Init.OverSampling    = UART_OVERSAMPLING_16;
 
   if(HAL_UART_Init(&UartHandle) != HAL_OK)
@@ -210,58 +200,7 @@ int main(void)
   /* Enable the FIFO mode */
   HAL_UARTEx_EnableFifoMode(&UartHandle);
 
-  /* Output message on hyperterminal */
-  HAL_UART_Transmit(&UartHandle, (uint8_t*)&HeaderTxBuffer, countof(HeaderTxBuffer)-1, HAL_TIMEOUT_VALUE);
-
-  /*##########################################################################*/
-  /*##-2- Wakeup first step RXFT #############################################*/
-  /*##########################################################################*/
-
-  /* Enable MCU wakeup by UART */
-  HAL_UARTEx_EnableStopMode(&UartHandle);
-
-  /* Enable the UART RX FIFO threshold interrupt */
-  __HAL_UART_ENABLE_IT(&UartHandle, UART_IT_RXFT);
-
-  /* Enable the UART wakeup from stop mode interrupt */
-  __HAL_UART_ENABLE_IT(&UartHandle, UART_IT_WUF);
-
-  /* Output message on hyperterminal */
-  HAL_UART_Transmit(&UartHandle, (uint8_t*)&Part1TxBuffer, countof(Part1TxBuffer)-1, HAL_TIMEOUT_VALUE);
-
-  /* Put UART peripheral in reception process */
-  HAL_UART_Receive_IT(&UartHandle, (uint8_t*)&RxBuffer, 3);
-
-  /* Turn LED1 off */
-  BSP_LED_Off(LED1);
-
-  /* Enter STOP mode */
-  HAL_PWR_EnterSTOPMode(PWR_MAINREGULATOR_ON,PWR_STOPENTRY_WFI);
-
-  /* ... STOP Mode ... */
-
-  while(HAL_UART_GetState(&UartHandle) != HAL_UART_STATE_READY)
-  {
-  }
-
-  /* Turn LED1 on */
-  BSP_LED_On(LED1);
-
-  /* Disable the UART wakeup from stop mode interrupt */
-  __HAL_UART_DISABLE_IT(&UartHandle, UART_IT_WUF);
-
-  /* Disable the UART RX FIFO threshold interrupt */
-  __HAL_UART_DISABLE_IT(&UartHandle, UART_IT_RXFT);
-
-  /* Disable UART Stop Mode */
-  HAL_UARTEx_DisableStopMode(&UartHandle);
-
-  /* Output message on hyperterminal */
-  HAL_UART_Transmit(&UartHandle, (uint8_t*)&WakeupRXFTBuffer, countof(WakeupRXFTBuffer)-1, HAL_TIMEOUT_VALUE);
-
-  /*##########################################################################*/
-  /*##-3- Wakeup second step RXFF ############################################*/
-  /*##########################################################################*/
+  /*##-2- Configure UART peripheral for reception process ##########*/  
 
   /* Enable MCU wakeup by UART */
   HAL_UARTEx_EnableStopMode(&UartHandle);
@@ -272,70 +211,39 @@ int main(void)
   /* Enable the UART wakeup from stop mode interrupt */
   __HAL_UART_ENABLE_IT(&UartHandle, UART_IT_WUF);
 
-  /* Output message on hyperterminal */
-  HAL_UART_Transmit(&UartHandle, (uint8_t*)&Part2TxBuffer, countof(Part2TxBuffer)-1, HAL_TIMEOUT_VALUE);
+  /*##-3- Start the transmission process #############*/
 
-  /* Put UART peripheral in reception process */
-  HAL_UART_Receive_IT(&UartHandle, (uint8_t*)&RxBuffer, 15);
+  
 
-  /* Enter STOP mode */
-  HAL_PWR_EnterSTOPMode(PWR_MAINREGULATOR_ON,PWR_STOPENTRY_WFI);
 
-  /* ... STOP Mode ... */
+  KIN1_InitCycleCounter(); /* enable DWT hardware */
 
-  /* Turn LED1 on */
-  BSP_LED_On(LED1);
-
-  while(HAL_UART_GetState(&UartHandle) != HAL_UART_STATE_READY)
-  {
-  }
-
-  /* Disable the UART wakeup from stop mode interrupt */
-  __HAL_UART_DISABLE_IT(&UartHandle, UART_IT_WUF);
-
-  /* Disable the UART RX FIFO full interrupt */
-  __HAL_UART_DISABLE_IT(&UartHandle, UART_IT_RXFF);
-
-  /* Disable UART Stop Mode */
-  HAL_UARTEx_DisableStopMode(&UartHandle);
-
-  /* Output message on hyperterminal */
-  HAL_UART_Transmit(&UartHandle, (uint8_t*)&WakeupRXFFBuffer, countof(WakeupRXFFBuffer)-1, HAL_TIMEOUT_VALUE);
-
-  /*##########################################################################*/
-  /*##-4- Successful test ####################################################*/
-  /*##########################################################################*/
-
-  /* Output message on hyperterminal */
-  HAL_UART_Transmit(&UartHandle, (uint8_t*)&FooterTxBuffer, countof(FooterTxBuffer)-1, HAL_TIMEOUT_VALUE);
-
+	KIN1_ResetCycleCounter(); /* reset cycle counter */
+  KIN1_EnableCycleCounter(); /* start counting */
   /* Infinite loop */
-  while(1) { 
-	int ret;
-    uint32_t tick,tock,spent, acc;
+  while (1)
+  {
+    
+     int ret;
+    uint32_t tick,tock,spent,acc;
     uint8_t ret_string[32];
     
-    for(int i = 0; i < 100; i++)
+    for(int i = 0; i < 20; i++)
     {
     	tick = KIN1_GetCycleCounter();
-		ret = Call_CTR(ARIA_128, TEXT_SIZE_128);
-		if(ret){
-			sprintf(ret_string,"%lu ERROR\n\r",ret);
-			HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, strlen(ret_string), 1000);
-			
-		}	
-		tock = KIN1_GetCycleCounter();
-		spent = tock - tick;
-		acc+= spent;
-		
+      ret = Call_CTR(KEYSIZE, TEXT_SIZE);
+      tock = KIN1_GetCycleCounter();
+      if(ret == 1)
+        Error_Handler();
+      spent = tock - tick;
+      acc += spent;
     }
+    sprintf(ret_string,"%lu clock cycles\n\r",acc/20);
+    acc=0;
+    HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, strlen(ret_string), 1000);
+	  HAL_Delay(1000);
 
-	sprintf(ret_string,"%lu clock cycles\n\r",acc/100);
-	acc=0;
-	HAL_UART_Transmit(&UartHandle, (uint8_t*)ret_string, strlen(ret_string), 1000);
-	HAL_Delay(1000);
-
-  } 
+  }
 }
 
 /**
@@ -454,7 +362,7 @@ static void Error_Handler(void)
 void assert_failed(uint8_t* file, uint32_t line)
 {
   /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+     ex: printf("Wrong parameters value: file %s on line %d\r\n\r", file, line) */
 
   /* Infinite loop */
   while(1) { ; }

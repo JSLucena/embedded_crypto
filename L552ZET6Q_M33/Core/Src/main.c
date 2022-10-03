@@ -29,21 +29,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "CTRMode.h"
-//#include "ARIA.h"
-//#include "CAMELLIA.h"
-//#include "NOEKEON.h"
-//#include "SEED.h"
-//#include "SIMON.h"
+#include "ARIA.h"
+#include "CAMELLIA.h"
+#include "NOEKEON.h"
+#include "SEED.h"
+#include "SIMON.h"
 #include "SPECK.h"
-//#include "IDEA.h"
-//#include "PRESENT.h"
-//#include "HIGHT.h"
-//#include "GOST.h"
+#include "IDEA.h"
+#include "PRESENT.h"
+#include "HIGHT.h"
+#include "GOST.h"
 #include "constants.h"
-
-#define TEXT_SIZE_64 2
-#define TEXT_SIZE_128 4
-#define TEXT_SIZE 148
+#include "config.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -157,7 +154,7 @@ int Call_CTR(enum Algorithm algorithm, int SIZE){
 			 return 1;
 		}		
 
-	}while (contText < 148);	
+	}while (contText < 202);	
   return 0;
 } 
 /* USER CODE END 0 */
@@ -239,46 +236,24 @@ int main(void)
   while (1)
   {
 
-    /* USART IRQ handler is not anymore routed to HAL_UART_IRQHandler() function 
-       and is now based on LL API functions use. 
-       Therefore, use of HAL IT based services is no more possible : use TX HAL polling services */
-
-    /* USART IRQ handler is not anymore routed to HAL_UART_IRQHandler() function 
-       and is now based on LL API functions use. 
-       Therefore, use of HAL IT based services is no more possible : use TX HAL polling services */
-
-
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
-
-
-
-    int ret;
-    uint32_t tick,tock,spent, acc;
+   int ret;
+    uint32_t tick,tock,spent,acc;
     uint8_t ret_string[32];
     
-    for(int i = 0; i < 100; i++)
+    for(int i = 0; i < 20; i++)
     {
     	tick = KIN1_GetCycleCounter();
-		ret = Call_CTR(SPECK_256, TEXT_SIZE_128);
-		tock = KIN1_GetCycleCounter();
-		if(ret)
-			Error_Handler();		
-
-		spent = tock - tick;
-
-	//sprintf(ret_string,"%lu Tick - %lu Tock \n\r",spent, ret);
-	//acc=0;
-	//HAL_UART_Transmit(&hlpuart1, (uint8_t*)ret_string, strlen(ret_string), 1000);
-		acc+= spent;
-		
+      ret = Call_CTR(KEYSIZE, TEXT_SIZE);
+      tock = KIN1_GetCycleCounter();
+      if(ret == 1)
+        Error_Handler();
+      spent = tock - tick;
+      acc += spent;
     }
-
-	sprintf(ret_string,"%lu clock cycles\n\r",acc/100, ret);
-	acc=0;
-	HAL_UART_Transmit(&hlpuart1, (uint8_t*)ret_string, strlen(ret_string), 1000);
-	//HAL_Delay(1000);
+    sprintf(ret_string,"%lu clock cycles\n\r",acc/20);
+    acc=0;
+    HAL_UART_Transmit(&hlpuart1, (uint8_t*)ret_string, strlen(ret_string), 1000);
+	  HAL_Delay(1000);
 
   }
 
