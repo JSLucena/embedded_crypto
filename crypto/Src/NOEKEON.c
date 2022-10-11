@@ -159,6 +159,7 @@ void NOEKEON_encrypt(uint32_t* block, uint32_t* key, uint32_t* encryptdBlock)
 void crypt_main(CTRCounter* ctrNonce, int key_size)
 {
 	int i;
+	/*
 	uint32_t counter32[4];
 	uint8_t counter[16];
 	for(i=0; i<16; i++){
@@ -167,8 +168,8 @@ void crypt_main(CTRCounter* ctrNonce, int key_size)
 	for(i=0; i<4; i++){
 		counter32[i] = (((uint32_t)counter[4*i+3]) << 24) + (((uint32_t)counter[4*i+2]) << 16) + (((uint32_t)counter[4*i+1]) << 8) + (uint32_t)counter[4*i];
 	}
-
-	NOEKEON_encrypt(counter32, ctrNonce->Key, ctrNonce->cipherText);	
+*/
+	NOEKEON_encrypt(ctrNonce->ctrNonce, ctrNonce->Key, ctrNonce->cipherText);	
 	return;
 }
 

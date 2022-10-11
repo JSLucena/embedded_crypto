@@ -142,11 +142,15 @@ int CTRMode_main(CTRCounter ctrCounter, enum Algorithm algorithm, int SIZE, int 
 	ctrCounter.cipherText[3] = ctrCounter.cipherTemp[3] ^ ctrCounter.cipherText[3];
 	
 	// Decrypt validation
+	/*
 	for (int i = 0; i < SIZE; i++)
 	{
 		// verify if decrypt and TextList is the same
 		if (!(ctrCounter.cipherText[i] == TEXT_LIST2[contText - SIZE + i]))
 			return 1;
 	}		
+	*/
 	return 0;
+	
+
 }

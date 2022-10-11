@@ -67,7 +67,7 @@ int Call_CTR(enum Algorithm algorithm, int SIZE){
 		}
 		
 
-	}while (contText < 202);	
+	}while (contText < PAYLOAD);	
   return 0;
 } 
 /** @addtogroup STM32L4xx_HAL_LL_MIX_Examples

@@ -1,5 +1,6 @@
 
 
+#define USE_AES
 //#define USE_ARIA 
 //#define USE_CAMELLIA 
 //#define USE_GOST 
@@ -9,7 +10,7 @@
 //#define USE_PRESENT 
 //#define USE_SEED 
 //#define USE_SIMON 
-#define USE_SPECK 
+//#define USE_SPECK 
 
 
 
@@ -29,8 +30,12 @@ Simon 128/192/256
 Speck 128/192/256
 
 */
+#define PAYLOAD 200
 #define KEYSIZE 256
 
+#ifdef USE_AES
+	#define TEXT_SIZE 4
+#endif
 #ifdef USE_ARIA
 	#define TEXT_SIZE 4
 #endif
