@@ -1,6 +1,6 @@
 
 
-#define USE_AES
+//#define USE_AES
 //#define USE_ARIA 
 //#define USE_CAMELLIA 
 //#define USE_GOST 
@@ -10,7 +10,7 @@
 //#define USE_PRESENT 
 //#define USE_SEED 
 //#define USE_SIMON 
-//#define USE_SPECK 
+#define USE_SPECK 
 
 
 
