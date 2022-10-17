@@ -122,7 +122,7 @@ int Call_CTR(enum Algorithm algorithm, int SIZE){
 			 return 1;
 		}		
 
-	}while (contText < 202);	
+	}while (contText < PAYLOAD);	
   return 0;
 
 }

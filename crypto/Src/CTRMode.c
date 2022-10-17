@@ -18,10 +18,14 @@
 #include "PRESENT.h"
 #include "HIGHT.h"
 #include "GOST.h"
-
+#include "config.h"
 #include "validator.h"
 
-
+#ifdef USE_NONE
+int crypt_main(CTRCounter* ctrNonce, int key_size){
+	return 0;
+}
+#endif
 /*
 void Select_Algorithm(CTRCounter* ctrCounter, enum Algorithm algorithm){
 	switch (algorithm)

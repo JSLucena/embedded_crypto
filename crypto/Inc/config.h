@@ -10,7 +10,8 @@
 //#define USE_PRESENT 
 //#define USE_SEED 
 //#define USE_SIMON 
-#define USE_SPECK 
+//#define USE_SPECK
+#define USE_NONE 
 
 
 
@@ -76,6 +77,9 @@ Speck 128/192/256
 	#define TEXT_SIZE 2
 #endif
 
+#ifdef USE_NONE
+	#define TEXT_SIZE 4
+#endif
 
 
 
